@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <title>Learning English</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>� Learning English</h1>
+            <p class="subtitle">An interactive desktop application for English language learning</p>
+        </header>
+
+        <main class="main-content">
+            <div class="card">
+                <h2>Welcome to Learning English!</h2>
+                <p>This is an interactive English learning application built with Electron.</p>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>App Version:</strong>
+                        <span id="app-version">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Platform:</strong>
+                        <span id="platform">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Node.js Version:</strong>
+                        <span id="node-version">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Chrome Version:</strong>
+                        <span id="chrome-version">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Features</h3>
+                <ul class="feature-list">
+                    <li>✅ Interactive English learning exercises</li>
+                    <li>✅ Vocabulary building tools</li>
+                    <li>✅ Grammar practice sessions</li>
+                    <li>✅ Progress tracking</li>
+                    <li>✅ Cross-platform compatibility</li>
+                    <li>✅ Offline learning capabilities</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <div class="button-group">
+                    <button id="new-file-btn" class="btn btn-primary">New Lesson (Ctrl+N)</button>
+                    <button id="open-file-btn" class="btn btn-secondary">Open Vocabulary (Ctrl+O)</button>
+                    <button id="toggle-devtools-btn" class="btn btn-secondary">Toggle DevTools</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Console Output</h3>
+                <div id="console-output" class="console-output">
+                    <p>Console output will appear here...</p>
+                </div>
+                <button id="clear-console-btn" class="btn btn-small">Clear Console</button>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 Learning English App. Built with ❤️ for language learners.</p>
+        </footer>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
