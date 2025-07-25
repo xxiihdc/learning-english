@@ -1,7 +1,9 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
+const dbManager = require('./database/manager');
 
 // Only require auto-updater in production builds
+app.disableHardwareAcceleration();
 let autoUpdater;
 try {
   autoUpdater = require('electron-updater').autoUpdater;
@@ -62,7 +64,10 @@ function createWindow() {
 }
 
 // This method will be called when Electron has finished initialization
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Initialize database
+  await initializeDatabase();
+  
   createWindow();
   createMenu();
 
@@ -80,7 +85,10 @@ app.whenReady().then(() => {
 });
 
 // Quit when all windows are closed
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  // Close database connection
+  await dbManager.close();
+  
   // On macOS, keep the app running even when all windows are closed
   if (process.platform !== 'darwin') {
     app.quit();
@@ -201,6 +209,20 @@ function createMenu() {
   Menu.setApplicationMenu(menu);
 }
 
+// Initialize Database
+async function initializeDatabase() {
+  try {
+    const success = await dbManager.initialize('json');
+    if (success) {
+      console.log('Database initialized successfully');
+    } else {
+      console.error('Failed to initialize database');
+    }
+  } catch (error) {
+    console.error('Database initialization error:', error);
+  }
+}
+
 // IPC handlers
 ipcMain.handle('app-version', () => {
   return app.getVersion();
@@ -208,6 +230,243 @@ ipcMain.handle('app-version', () => {
 
 ipcMain.handle('get-app-path', () => {
   return app.getAppPath();
+});
+
+// ==================== DATABASE IPC HANDLERS ====================
+
+// Vocabulary handlers
+ipcMain.handle('db-add-vocabulary', async (event, word) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.addVocabulary(word);
+  } catch (error) {
+    console.error('Error adding vocabulary:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-get-vocabulary', async (event, wordId) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.getVocabularyById(wordId);
+  } catch (error) {
+    console.error('Error getting vocabulary:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-get-all-vocabulary', async (event, options = {}) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.getAllVocabulary(options);
+  } catch (error) {
+    console.error('Error getting all vocabulary:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-update-vocabulary', async (event, wordId, updates) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.updateVocabulary(wordId, updates);
+  } catch (error) {
+    console.error('Error updating vocabulary:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-delete-vocabulary', async (event, wordId) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.deleteVocabulary(wordId);
+  } catch (error) {
+    console.error('Error deleting vocabulary:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-search-vocabulary', async (event, query, options = {}) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.searchVocabulary(query, options);
+  } catch (error) {
+    console.error('Error searching vocabulary:', error);
+    throw error;
+  }
+});
+
+// Learning progress handlers
+ipcMain.handle('db-record-session', async (event, session) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.recordLearningSession(session);
+  } catch (error) {
+    console.error('Error recording session:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-get-word-stats', async (event, wordId) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.getWordStatistics(wordId);
+  } catch (error) {
+    console.error('Error getting word stats:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-get-progress', async (event, options = {}) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.getOverallProgress(options);
+  } catch (error) {
+    console.error('Error getting progress:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-update-mastery', async (event, wordId, masteryLevel) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.updateWordMastery(wordId, masteryLevel);
+  } catch (error) {
+    console.error('Error updating mastery:', error);
+    throw error;
+  }
+});
+
+// Categories handlers
+ipcMain.handle('db-add-category', async (event, category) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.addCategory(category);
+  } catch (error) {
+    console.error('Error adding category:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-get-all-categories', async (event) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.getAllCategories();
+  } catch (error) {
+    console.error('Error getting categories:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-update-category', async (event, categoryId, updates) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.updateCategory(categoryId, updates);
+  } catch (error) {
+    console.error('Error updating category:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-delete-category', async (event, categoryId) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.deleteCategory(categoryId);
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    throw error;
+  }
+});
+
+// Settings handlers
+ipcMain.handle('db-save-setting', async (event, key, value) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.saveSetting(key, value);
+  } catch (error) {
+    console.error('Error saving setting:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-get-setting', async (event, key, defaultValue = null) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.getSetting(key, defaultValue);
+  } catch (error) {
+    console.error('Error getting setting:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-get-all-settings', async (event) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.getAllSettings();
+  } catch (error) {
+    console.error('Error getting all settings:', error);
+    throw error;
+  }
+});
+
+// Utility handlers
+ipcMain.handle('db-get-stats', async (event) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.getDatabaseStats();
+  } catch (error) {
+    console.error('Error getting database stats:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-backup', async (event, backupPath) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.backup(backupPath);
+  } catch (error) {
+    console.error('Error creating backup:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-restore', async (event, backupPath) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.restore(backupPath);
+  } catch (error) {
+    console.error('Error restoring backup:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-import-vocabulary', async (event, filePath, format) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.importVocabulary(filePath, format);
+  } catch (error) {
+    console.error('Error importing vocabulary:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('db-export-vocabulary', async (event, filePath, format, options = {}) => {
+  try {
+    const db = dbManager.getDatabase();
+    return await db.exportVocabulary(filePath, format, options);
+  } catch (error) {
+    console.error('Error exporting vocabulary:', error);
+    throw error;
+  }
+});
+
+// Database health check
+ipcMain.handle('db-health-check', async (event) => {
+  try {
+    return dbManager.isHealthy();
+  } catch (error) {
+    console.error('Error checking database health:', error);
+    return false;
+  }
 });
 
 // Handle app protocol for deep linking (optional)
