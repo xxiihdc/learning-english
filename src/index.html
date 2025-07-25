@@ -52,11 +52,54 @@
             </div>
 
             <div class="card">
+                <h3>Vocabulary Learning</h3>
+                <div class="vocabulary-section">
+                    <div class="flip-card" id="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="card-content">
+                                    <h3 class="word-title" id="word-title">Hello</h3>
+                                    <p class="word-type" id="word-type">noun</p>
+                                    <p class="word-phonetic" id="word-phonetic">/həˈloʊ/</p>
+                                    <div class="flip-hint">Click to see meaning</div>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="card-content">
+                                    <h3 class="meaning-title">Vietnamese Meaning</h3>
+                                    <p class="word-meaning" id="word-meaning">Xin chào</p>
+                                    <p class="word-example" id="word-example">"Hello, how are you?" - "Xin chào, bạn khỏe không?"</p>
+                                    <div class="flip-hint">Click to see word</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-controls">
+                        <button id="prev-card" class="btn btn-secondary">← Previous</button>
+                        <button id="flip-button" class="btn btn-primary">Flip Card</button>
+                        <button id="next-card" class="btn btn-secondary">Next →</button>
+                    </div>
+                    <div class="progress-info">
+                        <span id="card-counter">1 / 10</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
                 <h3>Quick Actions</h3>
                 <div class="button-group">
                     <button id="new-file-btn" class="btn btn-primary">New Lesson (Ctrl+N)</button>
                     <button id="open-file-btn" class="btn btn-secondary">Open Vocabulary (Ctrl+O)</button>
                     <button id="toggle-devtools-btn" class="btn btn-secondary">Toggle DevTools</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Database Actions</h3>
+                <div class="button-group">
+                    <button id="reload-vocabulary-btn" class="btn btn-primary">Reload Vocabulary</button>
+                    <button id="show-stats-btn" class="btn btn-secondary">Show Database Stats</button>
+                    <button id="add-word-btn" class="btn btn-secondary">Add Sample Word</button>
                 </div>
             </div>
 
