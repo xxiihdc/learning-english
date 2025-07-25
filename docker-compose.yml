@@ -1,0 +1,176 @@
+version: '3.8'
+
+services:
+  solr:
+    image: solr:9.4
+    container_name: learning-english-solr
+    ports:
+      - "8983:8983"
+    volumes:
+      # Persistent data storage
+      - solr_data:/var/solr
+      # Configuration files (optional)
+      - ./solr/configsets:/opt/solr/server/solr/configsets:ro
+      # Custom cores (optional)
+      - ./solr/cores:/opt/solr/server/solr/mycores
+    environment:
+      # Solr configuration
+      - SOLR_HEAP=512m
+      - SOLR_JAVA_MEM=-Xms512m -Xmx512m
+      # Security (optional - for production)
+      - SOLR_SECURITY_MANAGER_ENABLED=false
+    command:
+      - solr-foreground
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8983/solr/admin/cores?action=STATUS || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - solr-network
+
+  # Optional: Solr with authentication enabled
+  solr-secure:
+    image: solr:9.4
+    container_name: learning-english-solr-secure
+    profiles:
+      - secure
+    ports:
+      - "8984:8983"
+    volumes:
+      - solr_secure_data:/var/solr
+      - ./solr/security.json:/opt/solr/server/solr/security.json:ro
+    environment:
+      - SOLR_HEAP=512m
+      - SOLR_JAVA_MEM=-Xms512m -Xmx512m
+      - SOLR_AUTHENTICATION_OPTS=-Dbasicauth=admin:password123
+    command:
+      - solr-foreground
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -u admin:password123 http://localhost:8983/solr/admin/cores?action=STATUS || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - solr-network
+
+  # Optional: Zookeeper for SolrCloud (clustered setup)
+  zookeeper:
+    image: zookeeper:3.8
+    container_name: learning-english-zookeeper
+    profiles:
+      - cloud
+    ports:
+      - "2181:2181"
+    volumes:
+      - zk_data:/data
+      - zk_logs:/datalog
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181
+    restart: unless-stopped
+    networks:
+      - solr-network
+
+  # SolrCloud node 1
+  solr-cloud-1:
+    image: solr:9.4
+    container_name: learning-english-solr-cloud-1
+    profiles:
+      - cloud
+    ports:
+      - "8985:8983"
+    volumes:
+      - solr_cloud1_data:/var/solr
+    environment:
+      - SOLR_HEAP=512m
+      - ZK_HOST=zookeeper:2181
+    command:
+      - solr-foreground
+      - -c
+      - -z
+      - zookeeper:2181
+    depends_on:
+      - zookeeper
+    restart: unless-stopped
+    networks:
+      - solr-network
+
+  # SolrCloud node 2
+  solr-cloud-2:
+    image: solr:9.4
+    container_name: learning-english-solr-cloud-2
+    profiles:
+      - cloud
+    ports:
+      - "8986:8983"
+    volumes:
+      - solr_cloud2_data:/var/solr
+    environment:
+      - SOLR_HEAP=512m
+      - ZK_HOST=zookeeper:2181
+    command:
+      - solr-foreground
+      - -c
+      - -z
+      - zookeeper:2181
+    depends_on:
+      - zookeeper
+    restart: unless-stopped
+    networks:
+      - solr-network
+
+volumes:
+  # Main Solr data volume
+  solr_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/solr
+
+  # Secure Solr data volume
+  solr_secure_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/solr-secure
+
+  # SolrCloud volumes
+  solr_cloud1_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/solr-cloud-1
+
+  solr_cloud2_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/solr-cloud-2
+
+  # Zookeeper volumes
+  zk_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/zookeeper/data
+
+  zk_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/zookeeper/logs
+
+networks:
+  solr-network:
+    driver: bridge

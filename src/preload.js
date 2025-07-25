@@ -53,6 +53,33 @@ contextBridge.exposeInMainWorld('electronAPI', {
     healthCheck: () => ipcRenderer.invoke('db-health-check')
   },
   
+  // Solr/Vocabulary API
+  solr: {
+    // Get paginated vocabulary data
+    getVocabularyPaginated: (options) => ipcRenderer.invoke('solr-get-vocabulary-paginated', options),
+    
+    // Get vocabulary for learning sessions
+    getVocabularySession: (options) => ipcRenderer.invoke('solr-get-vocabulary-session', options),
+    
+    // Search vocabulary
+    searchVocabulary: (searchText, options) => ipcRenderer.invoke('solr-search-vocabulary', searchText, options),
+    
+    // Get vocabulary by ID
+    getVocabularyById: (id) => ipcRenderer.invoke('solr-get-vocabulary-by-id', id),
+    
+    // Get categories
+    getCategories: () => ipcRenderer.invoke('solr-get-categories'),
+    
+    // Add vocabulary
+    addVocabulary: (vocabulary) => ipcRenderer.invoke('solr-add-vocabulary', vocabulary),
+    
+    // Get statistics
+    getStatistics: () => ipcRenderer.invoke('solr-get-statistics'),
+    
+    // Check if Solr is ready
+    isReady: () => ipcRenderer.invoke('solr-is-ready')
+  },
+  
   // Example API methods - you can extend these
   showMessage: (message) => {
     console.log('Message from main process:', message);

@@ -1,6 +1,7 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
 const dbManager = require('./database/manager');
+const VocabularyAPI = require('./api/vocabulary-api');
 
 // Only require auto-updater in production builds
 app.disableHardwareAcceleration();
@@ -13,6 +14,9 @@ try {
 
 // Keep a global reference of the window object
 let mainWindow;
+
+// Initialize Vocabulary API
+const vocabularyAPI = new VocabularyAPI();
 
 function createWindow() {
   // Create the browser window
@@ -67,6 +71,9 @@ function createWindow() {
 app.whenReady().then(async () => {
   // Initialize database
   await initializeDatabase();
+  
+  // Initialize Vocabulary API
+  await initializeVocabularyAPI();
   
   createWindow();
   createMenu();
@@ -220,6 +227,20 @@ async function initializeDatabase() {
     }
   } catch (error) {
     console.error('Database initialization error:', error);
+  }
+}
+
+// Initialize Vocabulary API
+async function initializeVocabularyAPI() {
+  try {
+    const success = await vocabularyAPI.initialize();
+    if (success) {
+      console.log('Vocabulary API initialized successfully with Solr');
+    } else {
+      console.log('Vocabulary API initialized in fallback mode (Solr not available)');
+    }
+  } catch (error) {
+    console.error('Vocabulary API initialization error:', error);
   }
 }
 
@@ -465,6 +486,88 @@ ipcMain.handle('db-health-check', async (event) => {
     return dbManager.isHealthy();
   } catch (error) {
     console.error('Error checking database health:', error);
+    return false;
+  }
+});
+
+// ==================== SOLR/VOCABULARY API HANDLERS ====================
+
+// Get paginated vocabulary data
+ipcMain.handle('solr-get-vocabulary-paginated', async (event, options = {}) => {
+  try {
+    return await vocabularyAPI.getVocabularyPaginated(options);
+  } catch (error) {
+    console.error('Error getting paginated vocabulary:', error);
+    throw error;
+  }
+});
+
+// Get vocabulary for learning session
+ipcMain.handle('solr-get-vocabulary-session', async (event, options = {}) => {
+  try {
+    return await vocabularyAPI.getVocabularySession(options);
+  } catch (error) {
+    console.error('Error getting vocabulary session:', error);
+    throw error;
+  }
+});
+
+// Search vocabulary
+ipcMain.handle('solr-search-vocabulary', async (event, searchText, options = {}) => {
+  try {
+    return await vocabularyAPI.searchVocabulary(searchText, options);
+  } catch (error) {
+    console.error('Error searching vocabulary:', error);
+    throw error;
+  }
+});
+
+// Get vocabulary by ID
+ipcMain.handle('solr-get-vocabulary-by-id', async (event, id) => {
+  try {
+    return await vocabularyAPI.getVocabularyById(id);
+  } catch (error) {
+    console.error('Error getting vocabulary by ID:', error);
+    throw error;
+  }
+});
+
+// Get vocabulary categories
+ipcMain.handle('solr-get-categories', async (event) => {
+  try {
+    return await vocabularyAPI.getCategories();
+  } catch (error) {
+    console.error('Error getting categories:', error);
+    throw error;
+  }
+});
+
+// Add vocabulary
+ipcMain.handle('solr-add-vocabulary', async (event, vocabulary) => {
+  try {
+    return await vocabularyAPI.addVocabulary(vocabulary);
+  } catch (error) {
+    console.error('Error adding vocabulary:', error);
+    throw error;
+  }
+});
+
+// Get vocabulary statistics
+ipcMain.handle('solr-get-statistics', async (event) => {
+  try {
+    return await vocabularyAPI.getStatistics();
+  } catch (error) {
+    console.error('Error getting statistics:', error);
+    throw error;
+  }
+});
+
+// Check if Solr API is ready
+ipcMain.handle('solr-is-ready', async (event) => {
+  try {
+    return vocabularyAPI.isReady();
+  } catch (error) {
+    console.error('Error checking Solr readiness:', error);
     return false;
   }
 });

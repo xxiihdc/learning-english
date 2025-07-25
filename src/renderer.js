@@ -5,6 +5,12 @@ let vocabularyData = [];
 let currentCardIndex = 0;
 let isFlipped = false;
 
+// Pagination state
+let currentPage = 0;
+let totalPages = 0;
+let pageSize = 10;
+let totalVocabulary = 0;
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize the app
     setupEventListeners();
@@ -24,6 +30,14 @@ function setupEventListeners() {
     document.getElementById('next-card').addEventListener('click', () => {
         nextCard();
         console.log(`Switched to next card: ${vocabularyData[currentCardIndex].word}`);
+    });
+    
+    // Pagination event listeners
+    document.getElementById('prev-page').addEventListener('click', () => {
+        loadPreviousPage();
+    });
+    document.getElementById('next-page').addEventListener('click', () => {
+        loadNextPage();
     });
     
     // Keyboard shortcuts
@@ -50,9 +64,55 @@ function handleKeyboardShortcuts(event) {
 }
 
 // Database Functions
-async function loadVocabularyFromDatabase() {
+async function loadVocabularyFromDatabase(page = 0) {
     try {
-        console.log('Loading vocabulary from database...');
+        console.log(`Loading vocabulary page ${page + 1} from database...`);
+        
+        // First try to load from Solr if available
+        const isSolrReady = await window.electronAPI.solr.isReady();
+        
+        if (isSolrReady) {
+            console.log('Solr is available, loading vocabulary from Solr...');
+            const solrResult = await window.electronAPI.solr.getVocabularyPaginated({
+                page: page,
+                size: pageSize,
+                sort: 'id asc' // Use id for consistent sorting
+            });
+            
+            if (solrResult.success && solrResult.data.length > 0) {
+                // Transform Solr format to flip card format
+                vocabularyData = solrResult.data.map(word => ({
+                    id: word.id,
+                    word: word.english,
+                    type: word.note || 'unknown',
+                    phonetic: word.phonetic || '',
+                    meaning: word.vietnamese,
+                    example: word.example || '',
+                    category: word.note || 'general',
+                    masteryLevel: word.masteryLevel || 0,
+                    allMeanings: word.allMeanings || [word.vietnamese],
+                    allWords: word.allWords || [word.english]
+                }));
+                
+                // Update pagination state
+                currentPage = solrResult.pagination.page;
+                totalPages = solrResult.pagination.totalPages;
+                totalVocabulary = solrResult.pagination.total;
+                
+                console.log(`Loaded ${vocabularyData.length} words from Solr (Page ${currentPage + 1}/${totalPages})`);
+                
+                // Reset card index for new page
+                currentCardIndex = 0;
+                updateProgressDisplay();
+                updatePaginationControls();
+                return;
+            } else {
+                console.log('No vocabulary found in Solr, falling back to local database');
+            }
+        }
+        
+        // Fallback to local database (no pagination for now)
+        console.log('Loading vocabulary from local database...');
         
         // Check database health first
         const isHealthy = await window.electronAPI.database.healthCheck();
@@ -77,7 +137,12 @@ async function loadVocabularyFromDatabase() {
                 masteryLevel: word.masteryLevel || 0
             }));
             
-            console.log(`Loaded ${vocabularyData.length} words from database`);
+            // Set pagination state for local database
+            totalVocabulary = vocabularyData.length;
+            totalPages = Math.ceil(totalVocabulary / pageSize);
+            currentPage = 0;
+            
+            console.log(`Loaded ${vocabularyData.length} words from local database`);
         } else {
             console.log('No vocabulary found in database, using default words');
             // Fallback to default words if database is empty
@@ -90,12 +155,18 @@ async function loadVocabularyFromDatabase() {
                     example: "\"Hello, how are you?\" - \"Xin chào, bạn khỏe không?\""
                 }
             ];
+            totalVocabulary = 1;
+            totalPages = 1;
+            currentPage = 0;
         }
         
         // Reset card index if it's out of bounds
         if (currentCardIndex >= vocabularyData.length) {
             currentCardIndex = 0;
         }
+        
+        updateProgressDisplay();
+        updatePaginationControls();
         
     } catch (error) {
         console.error('Failed to load vocabulary from database:', error);
@@ -194,6 +265,41 @@ function updateProgressInfo() {
     const totalWords = vocabularyData.length || 1;
     const currentPosition = vocabularyData.length > 0 ? currentCardIndex + 1 : 0;
     document.getElementById('card-counter').textContent = `${currentPosition} / ${totalWords}`;
+}
+
+function updateProgressDisplay() {
+    updateProgressInfo();
+    updateCardDisplay();
+}
+
+// Pagination Functions
+async function loadNextPage() {
+    if (currentPage < totalPages - 1) {
+        await loadVocabularyFromDatabase(currentPage + 1);
+    }
+}
+
+async function loadPreviousPage() {
+    if (currentPage > 0) {
+        await loadVocabularyFromDatabase(currentPage - 1);
+    }
+}
+
+function updatePaginationControls() {
+    // Update page info
+    document.getElementById('page-info').textContent = `Page ${currentPage + 1} of ${totalPages}`;
+    document.getElementById('total-vocab').textContent = `Total: ${totalVocabulary} words`;
+    
+    // Update button states
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    
+    prevPageBtn.disabled = currentPage === 0;
+    nextPageBtn.disabled = currentPage >= totalPages - 1;
+    
+    // Update button text with page info
+    prevPageBtn.textContent = `← Previous 10`;
+    nextPageBtn.textContent = `Next 10 →`;
 }
 
 // Export functions for potential use by other scripts
