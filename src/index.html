@@ -10,111 +10,42 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>� Learning English</h1>
-            <p class="subtitle">An interactive desktop application for English language learning</p>
+            <h1>📚 Learning English</h1>
+            <p class="subtitle">Interactive vocabulary learning with flip cards</p>
         </header>
 
         <main class="main-content">
-            <div class="card">
-                <h2>Welcome to Learning English!</h2>
-                <p>This is an interactive English learning application built with Electron.</p>
-                
-                <div class="info-grid">
-                    <div class="info-item">
-                        <strong>App Version:</strong>
-                        <span id="app-version">Loading...</span>
-                    </div>
-                    <div class="info-item">
-                        <strong>Platform:</strong>
-                        <span id="platform">Loading...</span>
-                    </div>
-                    <div class="info-item">
-                        <strong>Node.js Version:</strong>
-                        <span id="node-version">Loading...</span>
-                    </div>
-                    <div class="info-item">
-                        <strong>Chrome Version:</strong>
-                        <span id="chrome-version">Loading...</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Features</h3>
-                <ul class="feature-list">
-                    <li>✅ Interactive English learning exercises</li>
-                    <li>✅ Vocabulary building tools</li>
-                    <li>✅ Grammar practice sessions</li>
-                    <li>✅ Progress tracking</li>
-                    <li>✅ Cross-platform compatibility</li>
-                    <li>✅ Offline learning capabilities</li>
-                </ul>
-            </div>
-
-            <div class="card">
-                <h3>Vocabulary Learning</h3>
-                <div class="vocabulary-section">
-                    <div class="flip-card" id="flip-card">
-                        <div class="flip-card-inner">
-                            <div class="flip-card-front">
-                                <div class="card-content">
-                                    <h3 class="word-title" id="word-title">Hello</h3>
-                                    <p class="word-type" id="word-type">noun</p>
-                                    <p class="word-phonetic" id="word-phonetic">/həˈloʊ/</p>
-                                    <div class="flip-hint">Click to see meaning</div>
-                                </div>
+            <div class="vocabulary-section">
+                <div class="flip-card" id="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="card-content">
+                                <h3 class="word-title" id="word-title">Hello</h3>
+                                <p class="word-type" id="word-type">noun</p>
+                                <p class="word-phonetic" id="word-phonetic">/həˈloʊ/</p>
+                                <div class="flip-hint">Click to see meaning</div>
                             </div>
-                            <div class="flip-card-back">
-                                <div class="card-content">
-                                    <h3 class="meaning-title">Vietnamese Meaning</h3>
-                                    <p class="word-meaning" id="word-meaning">Xin chào</p>
-                                    <p class="word-example" id="word-example">"Hello, how are you?" - "Xin chào, bạn khỏe không?"</p>
-                                    <div class="flip-hint">Click to see word</div>
-                                </div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="card-content">
+                                <h3 class="meaning-title">Vietnamese Meaning</h3>
+                                <p class="word-meaning" id="word-meaning">Xin chào</p>
+                                <p class="word-example" id="word-example">"Hello, how are you?" - "Xin chào, bạn khỏe không?"</p>
+                                <div class="flip-hint">Click to see word</div>
                             </div>
                         </div>
                     </div>
-                    <div class="card-controls">
-                        <button id="prev-card" class="btn btn-secondary">← Previous</button>
-                        <button id="flip-button" class="btn btn-primary">Flip Card</button>
-                        <button id="next-card" class="btn btn-secondary">Next →</button>
-                    </div>
-                    <div class="progress-info">
-                        <span id="card-counter">1 / 10</span>
-                    </div>
                 </div>
-            </div>
-
-            <div class="card">
-                <h3>Quick Actions</h3>
-                <div class="button-group">
-                    <button id="new-file-btn" class="btn btn-primary">New Lesson (Ctrl+N)</button>
-                    <button id="open-file-btn" class="btn btn-secondary">Open Vocabulary (Ctrl+O)</button>
-                    <button id="toggle-devtools-btn" class="btn btn-secondary">Toggle DevTools</button>
+                <div class="card-controls">
+                    <button id="prev-card" class="btn btn-secondary">← Previous</button>
+                    <button id="flip-button" class="btn btn-primary">Flip Card</button>
+                    <button id="next-card" class="btn btn-secondary">Next →</button>
                 </div>
-            </div>
-
-            <div class="card">
-                <h3>Database Actions</h3>
-                <div class="button-group">
-                    <button id="reload-vocabulary-btn" class="btn btn-primary">Reload Vocabulary</button>
-                    <button id="show-stats-btn" class="btn btn-secondary">Show Database Stats</button>
-                    <button id="add-word-btn" class="btn btn-secondary">Add Sample Word</button>
+                <div class="progress-info">
+                    <span id="card-counter">1 / 10</span>
                 </div>
-            </div>
-
-            <div class="card">
-                <h3>Console Output</h3>
-                <div id="console-output" class="console-output">
-                    <p>Console output will appear here...</p>
-                </div>
-                <button id="clear-console-btn" class="btn btn-small">Clear Console</button>
             </div>
         </main>
-
-        <footer class="footer">
-            <p>&copy; 2025 Learning English App. Built with ❤️ for language learners.</p>
-        </footer>
     </div>
 
     <script src="renderer.js"></script>
